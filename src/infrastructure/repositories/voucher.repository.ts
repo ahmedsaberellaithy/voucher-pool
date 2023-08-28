@@ -4,7 +4,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Voucher } from '../entities/voucher.entity';
 import { Repository } from 'typeorm';
-import { mapModelToVoucher, mapVoucherToModel } from './mappers';
+import {
+  mapModelToCustomer,
+  mapModelToVoucher,
+  mapVoucherToModel,
+} from './mappers';
+import { CustomerModel } from '@/domain/model/customer';
 
 @Injectable()
 export class DatabaseVoucherRepository implements VoucherRepository {
@@ -45,5 +50,13 @@ export class DatabaseVoucherRepository implements VoucherRepository {
       { code: entity.code },
       { is_used: true, used_at: new Date() },
     );
+  }
+
+  findCustomerVouchers(customer: CustomerModel): Promise<VoucherModel[]> {
+    return this.voucherEntityRepository
+      .findBy({ customer: { id: mapModelToCustomer(customer).id } })
+      .then((entities) => {
+        return entities.map((entity) => mapVoucherToModel(entity));
+      });
   }
 }
